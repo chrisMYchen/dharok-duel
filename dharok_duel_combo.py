@@ -1,49 +1,6 @@
 import random
 
-class Player:
-    def __init__(self, name, attack_level=99, defense_level=99):
-        self.name = name
-        self.hp = 99
-        self.shark_count = 6
-        self.karambwan_count = 2
-        self.attack_level = attack_level
-        self.defense_level = defense_level
-        self.strategy = None
-
-    def reset(self):
-        self.hp = 99
-        self.shark_count = 6
-        self.karambwan_count = 2
-
-    def attack(self, opponent):
-        max_hit = 44 + (42 * ((99 - self.hp) // 98))
-        if self.hit_success(opponent):
-            hit = random.randint(0, int(max_hit))
-            opponent.hp -= hit
-
-    def hit_success(self, opponent):
-        attack_roll = self.attack_level * (self.attack_level + 64)
-        defense_roll = opponent.defense_level * (opponent.defense_level + 64)
-        hit_chance = attack_roll / (attack_roll + defense_roll)
-        return random.random() < hit_chance
-
-    def eat_shark(self):
-        if self.shark_count > 0:
-            self.hp += 20
-            if self.hp > 99:
-                self.hp = 99
-            self.shark_count -= 1
-
-    def eat_shark_and_karambwan(self):
-        if self.shark_count > 0 and self.karambwan_count > 0:
-            self.hp += 38
-            if self.hp > 99:
-                self.hp = 99
-            self.shark_count -= 1
-            self.karambwan_count -= 1
-
-    def choose_action(self, opponent):
-        return self.strategy(self, opponent)
+from player import Player
 
 def strategy1(player, opponent, threshold):
     if player.hp < threshold and player.shark_count > 0 and player.karambwan_count > 0:
@@ -70,7 +27,7 @@ def simulate_game(strategy, threshold1, threshold2):
         
         players.reverse()
 
-def find_optimal_threshold():
+def find_optimal_threshold(n_sims=100):
     thresholds = range(2, 61)
     threshold_wins = {threshold: 0 for threshold in thresholds}
     max_total_fights = 0
@@ -82,7 +39,7 @@ def find_optimal_threshold():
         thresholds_2 = range(2, 61)
         for threshold2 in thresholds_2:
             if threshold1 != threshold2:
-                for _ in range(1000):
+                for _ in range(n_sims):
                     total_fights+=1
                     winner = simulate_game(strategy1, threshold1, threshold2)
                     if winner == "Player 1":
@@ -95,5 +52,5 @@ def find_optimal_threshold():
     
     return optimal_threshold, max_wins, max_total_fights
 
-optimal_threshold, max_wins, max_total_fights = find_optimal_threshold()
+optimal_threshold, max_wins, max_total_fights = find_optimal_threshold(n_sims=100)
 print(f"Optimal HP threshold for strategy1 is {optimal_threshold} with {max_wins} out of {max_total_fights}")
